@@ -49,7 +49,7 @@ jobs:
       # Con firma: se aplica el ícono al .exe (la firma hace que Windows lo acepte).
       # Sin firma: el .exe queda sin modificar para que Smart App Control lo reconozca.
       - name: Empaquetar la app
-        run: npx electron-builder --win --dir --config.win.signAndEditExecutable=${{ env.SIGNPATH_ENABLED }}
+        run: npx electron-builder --win --dir --publish never --config.win.signAndEditExecutable=${{ env.SIGNPATH_ENABLED }}
 
       # ---------------------------------------------------------------- Firma de NVTabs.exe
       - name: Subir la app sin firmar
@@ -82,7 +82,7 @@ jobs:
 
       # ---------------------------------------------------------------- Instalador y portable
       - name: Crear instalador y versión portable
-        run: npx electron-builder --win nsis zip --prepackaged ${{ env.APP_DIR }}
+        run: npx electron-builder --win nsis zip --publish never --prepackaged ${{ env.APP_DIR }}
 
       - name: Juntar archivos para publicar
         shell: pwsh

@@ -7,12 +7,20 @@
 // (Se usa afterPack porque afterSign no se ejecuta cuando no hay firma.)
 const fs = require('node:fs');
 const path = require('node:path');
+const { execFileSync } = require('node:child_process');
 
 exports.default = async function afterPack(context) {
   if (context.electronPlatformName !== 'win32') return;
   if (context.packager.platformSpecificBuildOptions.signAndEditExecutable !== false) return;
 
-  const original = path.join(path.dirname(require.resolve('electron/package.json')), 'dist', 'electron.exe');
+  const electronDir = path.dirname(require.resolve('electron/package.json'));
+  const original = path.join(electronDir, 'dist', 'electron.exe');
+  // Electron descarga su ejecutable recién la primera vez que se usa (no en "npm install");
+  // en GitHub Actions todavía no existe, así que se descarga con su propio instalador.
+  if (!fs.existsSync(original)) {
+    console.log('  - descargando electron.exe oficial...');
+    execFileSync(process.execPath, [path.join(electronDir, 'install.js')], { cwd: electronDir, stdio: 'inherit' });
+  }
   const target = path.join(context.appOutDir, `${context.packager.appInfo.productFilename}.exe`);
   fs.copyFileSync(original, target);
   console.log('  - NVTabs.exe = electron.exe oficial (compilacion sin firma)');
