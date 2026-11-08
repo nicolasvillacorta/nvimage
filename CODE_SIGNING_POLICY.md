@@ -27,8 +27,9 @@ multi-factor authentication for GitHub and SignPath.
 This program will not transfer any information to other networked systems unless specifically
 requested by the user or the person installing or operating it.
 
-NVTabs works fully offline: photos, settings and thumbnails are stored only on the user's computer
-(`Documents\NVTabs` and `%APPDATA%\NVTabs`).
+NVTabs works offline: photos, notes, settings and thumbnails are stored only on the user's computer
+(`Documents\NVTabs` and `%APPDATA%\NVTabs`). The only exception is *Search with Google Lens*: when the user
+explicitly chooses it for a photo, that image is uploaded to Google Lens from the user's own browser.
 
 ---
 
@@ -37,4 +38,5 @@ NVTabs works fully offline: photos, settings and thumbnails are stored only on t
 - Solo se firman las versiones oficiales publicadas en *Releases*, compiladas automáticamente por GitHub
   a partir del código público de este repositorio.
 - Cada firma la aprueba manualmente Nicolas Villacorta.
-- NVTabs no envía información a internet: todo queda en la computadora del usuario.
+- NVTabs no envía información a internet: todo queda en la computadora del usuario. La única excepción es
+  "Search with Google Lens": cuando el usuario lo elige, esa imagen se sube a Google Lens desde su navegador.

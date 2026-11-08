@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('nv', {
   revealPhoto: (p) => call('photo:reveal', p),
   copyPhoto: (p) => call('photo:copy', p),
   openWith: (p) => call('file:openWith', p),
+  lens: (p) => call('lens', p),
   moveItems: (paths, tab) => call('items:move', paths, tab),
 
   createNote: (tab) => call('note:create', tab),
@@ -43,6 +44,14 @@ contextBridge.exposeInMainWorld('nv', {
   about: () => call('about'),
   openLink: (id) => call('link', id),
 
+  getSettings: () => call('settings:get'),
+  saveSettings: (s) => call('settings:set', s),
+  pauseShortcut: (paused) => call('shortcut:pause', !!paused),
+  takeScreenshot: () => call('capture:start'),
+  quit: () => call('app:quit'),
+
   pathForFile: (file) => webUtils.getPathForFile(file),
   onFocus: (cb) => ipcRenderer.on('window:focus', () => cb()),
+  onItemsChanged: (cb) => ipcRenderer.on('items:changed', (_e, tab) => cb(tab)),
+  onGotoTab: (cb) => ipcRenderer.on('tab:goto', (_e, tab) => cb(tab)),
 });

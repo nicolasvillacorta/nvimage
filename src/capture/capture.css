@@ -1,0 +1,74 @@
+html, body { margin: 0; height: 100%; overflow: hidden; background: #000; cursor: crosshair; user-select: none; }
+/* "hidden" siempre gana (si no, reglas como #bar { display: flex } mostraban la barra antes de recortar) */
+[hidden] { display: none !important; }
+body { font: 13px "Segoe UI", sans-serif; }
+#shot { position: fixed; inset: 0; width: 100vw; height: 100vh; -webkit-user-drag: none; }
+#dim { position: fixed; inset: 0; background: rgba(0, 0, 0, .35); }
+#sel {
+  position: fixed; border: 1.5px solid #fff;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, .45);   /* oscurece todo menos la zona elegida */
+  outline: 1px dashed rgba(0, 0, 0, .5); outline-offset: -1.5px;
+}
+#ink { position: absolute; inset: 0; width: 100%; height: 100%; }
+#size {
+  position: absolute; left: 0; top: -26px;
+  padding: 2px 8px; border-radius: 6px;
+  background: rgba(20, 20, 24, .85); color: #fff;
+  font-size: 12px; white-space: nowrap; pointer-events: none;
+}
+#hint {
+  position: fixed; top: 18px; left: 50%; transform: translateX(-50%);
+  padding: 9px 16px; border-radius: 999px;
+  background: rgba(20, 20, 24, .88); color: #fff;
+  font-size: 14px; pointer-events: none;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .35);
+}
+#hint kbd { font: inherit; padding: 0 6px; border-radius: 4px; background: rgba(255, 255, 255, .18); }
+body.has-sel #dim, body.has-sel #hint { display: none; }
+body.tool-text #sel { cursor: text; }
+
+/* ---------------------------------------------------------------- Barra de acciones */
+#bar, #tabmenu {
+  position: fixed; z-index: 10;
+  background: rgba(30, 31, 36, .97); color: #eee;
+  border: 1px solid rgba(255, 255, 255, .08); border-radius: 12px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, .45);
+  cursor: default;
+}
+#bar { padding: 6px; display: flex; flex-direction: column; gap: 4px; }
+.row { display: flex; align-items: center; gap: 3px; }
+.row.actions { border-top: 1px solid rgba(255, 255, 255, .08); padding-top: 5px; }
+.sep { width: 1px; height: 22px; background: rgba(255, 255, 255, .14); margin: 0 4px; }
+button {
+  font: inherit; color: inherit; cursor: pointer;
+  border: 0; border-radius: 8px; background: transparent;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+}
+button svg { width: 18px; height: 18px; flex: none; }
+.tool { width: 34px; height: 32px; }
+.tool:hover, .act:hover { background: rgba(255, 255, 255, .1); }
+.tool.active { background: #3d8bfd; color: #fff; }
+#undo:disabled { opacity: .35; cursor: default; background: transparent; }
+.act { height: 32px; padding: 0 11px; white-space: nowrap; }
+.act svg { width: 16px; height: 16px; }
+.act.primary { background: #3d8bfd; color: #fff; font-weight: 600; }
+.act.primary:hover { background: #5a9cff; }
+.act.only-icon { width: 34px; padding: 0; }
+#colors { display: flex; gap: 5px; padding: 0 3px; }
+.color { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .35); padding: 0; }
+.color.active { border-color: #fff; box-shadow: 0 0 0 2px #3d8bfd; }
+body.busy #bar { opacity: .6; pointer-events: none; }
+
+/* Menú de pestañas ("Save to tab…") */
+#tabmenu { padding: 5px; min-width: 180px; max-height: 50vh; overflow-y: auto; }
+#tabmenu button { display: flex; justify-content: flex-start; width: 100%; padding: 7px 10px; }
+#tabmenu button:hover { background: rgba(255, 255, 255, .1); }
+#tabmenu .empty { padding: 8px 10px; color: #aaa; }
+
+/* Caja para escribir una nota sobre el recorte */
+.textbox {
+  position: fixed; z-index: 5; min-width: 120px; min-height: 28px;
+  font: bold 20px/1.3 "Segoe UI", sans-serif;
+  background: rgba(0, 0, 0, .25); border: 1.5px dashed rgba(255, 255, 255, .8); border-radius: 4px;
+  padding: 0 2px; outline: none; resize: none; overflow: hidden;
+}

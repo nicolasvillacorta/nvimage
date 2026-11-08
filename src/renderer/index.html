@@ -87,6 +87,7 @@
     <div class="v-top">
       <div class="v-info"><span id="vName"></span><span id="vPos"></span></div>
       <div class="v-actions">
+        <button class="vbtn lens-btn" id="vLens" data-icon="lens" title="Search with Google Lens (L)"><span>Google Lens</span></button>
         <button class="vbtn" id="vOpen" data-icon="external" title="Open with the default Windows app"></button>
         <button class="vbtn" id="vReveal" data-icon="folder" title="Show in folder"></button>
         <button class="vbtn" id="vCopy" data-icon="copy" title="Copy image"></button>
@@ -107,7 +108,7 @@
       <img src="icon.svg" class="about-logo" alt="">
       <h2 id="aboutTitle">NVTabs</h2>
       <div class="about-version" id="aboutVersion"></div>
-      <p class="about-desc">Your photos and notes, organized in tabs.<br>Free, open source and fully offline.</p>
+      <p class="about-desc">Your photos and notes, organized in tabs.<br>Free and open source. Your files never leave your computer<br>unless you search one with Google Lens.</p>
       <div class="about-links">
         <button class="btn" data-link="repo" data-icon="github">Source code</button>
         <button class="btn" data-link="issues" data-icon="bug">Report an issue</button>
@@ -118,6 +119,41 @@
         <span>© 2026 Nicolas Villacorta · <a href="#" data-link="license">MIT License</a></span>
         <button class="btn" id="aboutCopy" data-icon="copy">Copy info</button>
       </div>
+    </div>
+  </div>
+
+  <div id="settings" class="modal-back" hidden>
+    <div class="about settings" role="dialog" aria-labelledby="setTitle">
+      <button class="about-close" id="setClose" data-icon="x" title="Close (Esc)"></button>
+      <h2 id="setTitle">Settings</h2>
+
+      <div class="set-row">
+        <div class="set-text">
+          <div class="set-name">Screenshot shortcut</div>
+          <div class="set-desc">Press it anywhere in Windows to capture an area of the screen. Screenshots are saved to the "Unsorted" tab.</div>
+        </div>
+        <div class="set-ctl">
+          <button class="btn shortcut-btn" id="setShortcut" title="Click and press the new combination"></button>
+          <button class="btn" id="setShortcutClear" title="Remove the shortcut">Clear</button>
+        </div>
+      </div>
+      <div id="setShortcutMsg" class="set-msg" hidden></div>
+
+      <label class="set-row">
+        <div class="set-text">
+          <div class="set-name">Keep running in the notification area</div>
+          <div class="set-desc">Closing the window keeps NVTabs running next to the clock, so the shortcut always works.</div>
+        </div>
+        <input type="checkbox" id="setBackground" class="switch">
+      </label>
+
+      <label class="set-row">
+        <div class="set-text">
+          <div class="set-name">Start with Windows</div>
+          <div class="set-desc" id="setStartupDesc">Opens NVTabs in the background when you sign in, ready for screenshots.</div>
+        </div>
+        <input type="checkbox" id="setStartup" class="switch">
+      </label>
     </div>
   </div>
 

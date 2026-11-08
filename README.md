@@ -1,7 +1,9 @@
 # NVTabs
 
+**English** · [Español](README.es.md)
+
 A free and open source Windows desktop app to view and organize your photos and notes in tabs
-(for example "Sales", "Purchases", "Clients"...). It works fully offline: everything stays on your computer.
+(for example "Sales", "Purchases", "Clients"...). Everything stays on your computer: the only time NVTabs goes online is when you choose *Search with Google Lens*.
 
 ## Try it
 
@@ -45,6 +47,19 @@ Your photos and notes are saved in `Documents\NVTabs` either way.
 - **Notes:** *New note* (`Ctrl+N`) creates one, and its first line becomes its name. You can also add text files
   (`.txt`, `.md`, `.log`, `.csv`, `.json`...) or paste copied text with `Ctrl+V`. Click a note to read and edit it
   (it saves automatically). Right-click any photo or note → *Open with…* to use another app.
+- **Move between tabs:** right-click → *Move to* → the destination tab, or drag a photo or note onto another tab's name.
+  If it's selected together with others, they all move.
+- **Google Lens:** right-click a photo → *Search with Google Lens* (or the *Google Lens* button / `L` in the full-size view).
+  It opens a new tab in your browser with the Lens results for that image.
+- **Screenshots** (inspired by Flameshot): press `Ctrl+Alt+S` anywhere in Windows (configurable) and drag to select an
+  area, or click to capture the whole screen. The screen stays frozen and a toolbar appears next to your selection:
+  - **Draw on it** before saving: pen, highlighter, arrow, rectangle and text notes, in several colors (`Ctrl+Z` undoes).
+  - **Save to Unsorted** (`Enter` or double-click), **Search with Google Lens** (also saves it to Unsorted),
+    **Copy** (`Ctrl+C`), **Save to tab…** (any other NVTabs tab) or **Save as…** (`Ctrl+S`, any folder on your PC).
+  - `Esc` cancels.
+- **Runs in the background:** closing the window keeps NVTabs in the notification area (next to the clock) so the
+  shortcut always works. Quit it from its icon or from `⋯` → *Quit NVTabs*. In `⋯` → *Settings* (`Ctrl+,`) you can
+  change the shortcut, turn off the background mode, or make NVTabs start with Windows.
 - **View full size:** click a photo · `←` `→` or the mouse wheel to browse · `Esc` to close.
 - **Select:** each photo's circle, `Ctrl+click`, `Shift+click` or `Ctrl+A` · `Del` to delete.
 - **Theme:** `⋯` menu → *Theme* → System, Light or Dark.
@@ -67,16 +82,25 @@ npm run icons            # regenerate build\icon.png and build\icon.ico from src
 
 | Folder / file | Contents |
 |---|---|
-| `src/main.js` | Main process: files, tabs, thumbnails, clipboard, menus |
+| `src/main.js` | Main process: files, tabs, notes, thumbnails, clipboard, Google Lens, screenshots, notification area, settings |
 | `src/preload.js` | Secure bridge between the UI and the main process |
 | `src/renderer/` | User interface (HTML, CSS and JavaScript, no frameworks) |
+| `src/capture/` | Full-screen screenshot overlay: area selection, drawing tools and the action toolbar |
 | `build/` | Icons, icon generator, build hooks and installer script |
 | `.github/workflows/release.yml` | Automated build, signing and release on GitHub |
 | `.github/signpath/` | Artifact configurations for SignPath |
 | `version-powershell/` | First version (PowerShell script), kept for reference |
 
-**Automated test:** with the environment variable `NV_TEST=<folder>`, the app uses test data from that folder,
-takes screenshots of the main screens and closes itself (see `runTest` in `src/main.js`).
+**Automated tests:** with the environment variable `NV_TEST=<folder>`, the app uses test data from that folder
+(including fake Documents/Pictures/AppData folders), takes screenshots of the main screens and closes itself
+(see `runTest` in `src/main.js`). Add one of these variables to test a specific feature:
+
+| Variable | Tests |
+|---|---|
+| `NV_TEST_NOTES=1` | Notes: import, old encodings, editor, automatic names, pasting text |
+| `NV_TEST_MOVE=1` | Moving photos and notes between tabs (menu and drag & drop) |
+| `NV_TEST_PASTE=<mode>` | Pasting from the clipboard (`archivos`, `imagen`, `copy`) |
+| `NV_TEST_CAPTURE=fake` | Screenshots with a fake screen (`<folder>\pantalla-falsa.png`): toolbar, drawing, every action, settings |
 
 ### Publishing a release
 

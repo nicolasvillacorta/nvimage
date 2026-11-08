@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src nv:; style-src 'self'; script-src 'self'">
+  <title>NVTabs screenshot</title>
+  <link rel="stylesheet" href="capture.css">
+</head>
+<body>
+  <img id="shot" alt="">
+  <div id="dim"></div>
+  <div id="sel" hidden><canvas id="ink"></canvas><span id="size"></span></div>
+  <div id="hint">Drag to select an area · Click to capture the whole screen · <kbd>Esc</kbd> to cancel</div>
+
+  <!-- Barra que aparece junto al recorte -->
+  <div id="bar" hidden>
+    <div class="row">
+      <button class="tool" data-tool="select" data-icon="select" title="Select a new area (V)"></button>
+      <button class="tool" data-tool="pen" data-icon="pen" title="Pen (P)"></button>
+      <button class="tool" data-tool="marker" data-icon="marker" title="Highlighter (H)"></button>
+      <button class="tool" data-tool="arrow" data-icon="arrow" title="Arrow (A)"></button>
+      <button class="tool" data-tool="rect" data-icon="rect" title="Rectangle (R)"></button>
+      <button class="tool" data-tool="text" data-icon="text" title="Text note (T)"></button>
+      <span class="sep"></span>
+      <div id="colors"></div>
+      <span class="sep"></span>
+      <button class="tool" id="undo" data-icon="undo" title="Undo (Ctrl+Z)"></button>
+    </div>
+    <div class="row actions">
+      <button class="act" data-action="lens" data-icon="lens" title="Save to Unsorted and search it with Google Lens">Search with Google Lens</button>
+      <button class="act" data-action="copy" data-icon="copy" title="Copy to the clipboard (Ctrl+C)">Copy</button>
+      <button class="act" data-action="tab" data-icon="tabs" title="Save to another NVTabs tab">Save to tab…</button>
+      <button class="act" data-action="saveas" data-icon="save" title="Save to a folder on your PC (Ctrl+S)">Save as…</button>
+      <button class="act primary" data-action="unsorted" data-icon="check" title="Save to the Unsorted tab (Enter)">Save to Unsorted</button>
+      <button class="act only-icon" data-action="cancel" data-icon="x" title="Cancel (Esc)"></button>
+    </div>
+  </div>
+  <div id="tabmenu" hidden></div>
+
+  <script src="capture.js"></script>
+</body>
+</html>

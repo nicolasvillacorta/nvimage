@@ -28,6 +28,9 @@ const ICONS = {
   download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
   big: '<rect x="2" y="2" width="20" height="20" rx="3"/>',
   note: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
+  lens: '<path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.2"/>',
+  camera: '<path d="M4 8a2 2 0 0 1 2-2h1.5l1.5-2h6l1.5 2H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.5"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
 };
 function icon(name) {
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`;
@@ -404,6 +407,12 @@ async function deletePaths(paths, ask = true) {
   return n || 0;
 }
 
+async function searchLens(p) {
+  if (!p || p.kind === 'note') return;
+  toast('Opening Google Lens in your browser…');
+  await guard(() => nv.lens(p.path));
+}
+
 async function moveItems(paths, tab) {
   if (!paths.length || !tab || tab === S.current) return;
   const r = await guard(() => nv.moveItems(paths, tab));
@@ -440,6 +449,8 @@ async function photoMenu(i) {
   const others = S.tabs.filter((t) => t.name !== S.current);
   const choice = await nv.menu([
     { id: 'view', label: isNote ? 'Open note' : 'View' },
+    ...(isNote ? [] : [{ id: 'lens', label: 'Search with Google Lens' }]),
+    '-',
     { id: 'open', label: 'Open with the default app' },
     { id: 'openWith', label: 'Open with…' },
     { id: 'reveal', label: 'Show in folder' },
@@ -456,6 +467,7 @@ async function photoMenu(i) {
   ]);
   if (choice?.startsWith('move:')) moveItems(many ? [...S.selected] : [p.path], choice.slice(5));
   if (choice === 'view') openViewer(i);
+  if (choice === 'lens') searchLens(p);
   if (choice === 'open') guard(() => nv.openPhoto(p.path));
   if (choice === 'openWith') guard(() => nv.openWith(p.path));
   if (choice === 'reveal') guard(() => nv.revealPhoto(p.path));
@@ -577,6 +589,7 @@ $('#vPrev').addEventListener('click', (e) => { e.stopPropagation(); vStep(-1); }
 $('#vNext').addEventListener('click', (e) => { e.stopPropagation(); vStep(1); });
 $('#vClose').addEventListener('click', closeViewer);
 $('#vStage').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeViewer(); });
+$('#vLens').addEventListener('click', () => searchLens(vCurrent()));
 $('#vOpen').addEventListener('click', () => guard(() => nv.openPhoto(vCurrent().path)));
 $('#vReveal').addEventListener('click', () => guard(() => nv.revealPhoto(vCurrent().path)));
 $('#vCopy').addEventListener('click', async () => { if (await guard(() => nv.copyPhoto(vCurrent().path))) toast('Image copied'); });
@@ -702,18 +715,131 @@ $('#aboutCopy').addEventListener('click', async () => {
 
 $('#appMenu').addEventListener('click', async () => {
   const themeItem = (id, label) => ({ id: `theme:${id}`, label, radio: true, checked: S.theme === id });
+  const st = await nv.getSettings().catch(() => ({}));
   const choice = await nv.menu([
+    { id: 'screenshot', label: st.shortcut ? `Take screenshot  (${st.shortcut})` : 'Take screenshot' },
+    '-',
     { id: 'photos', label: 'Open NVTabs folder' },
     { label: 'Theme', submenu: [themeItem('system', 'System'), themeItem('light', 'Light'), themeItem('dark', 'Dark')] },
+    { id: 'settings', label: 'Settings…' },
     '-',
     { id: 'issues', label: 'Report an issue' },
     { id: 'repo', label: 'Source code on GitHub' },
-    '-',
     { id: 'about', label: 'About NVTabs' },
+    '-',
+    { id: 'quit', label: 'Quit NVTabs' },
   ]);
   if (choice === 'about') openAbout();
+  else if (choice === 'settings') openSettings();
+  else if (choice === 'screenshot') guard(() => nv.takeScreenshot());
+  else if (choice === 'quit') nv.quit();
   else if (choice?.startsWith('theme:')) setTheme(choice.slice(6));
   else if (choice) guard(() => nv.openLink(choice));
+});
+
+// ------------------------------------------------------------------ Configuración
+let recording = false;
+const settingsOpen = () => !$('#settings').hidden;
+const prettyShortcut = (s) => (s ? s.split('+').join(' + ') : 'None');
+
+function renderSettings(st) {
+  $('#setShortcut').textContent = recording ? 'Press the new shortcut…' : prettyShortcut(st.shortcut);
+  $('#setShortcut').classList.toggle('recording', recording);
+  $('#setShortcutClear').disabled = !st.shortcut;
+  $('#setBackground').checked = st.background;
+  $('#setStartup').checked = st.startup;
+  $('#setStartup').disabled = !st.canStartup;
+  $('#setStartupDesc').textContent = st.canStartup
+    ? 'Opens NVTabs in the background when you sign in, ready for screenshots.'
+    : 'Only available in the installed app (not when running from the source code).';
+  const msg = $('#setShortcutMsg');
+  if (st.shortcut && !st.shortcutOk) { msg.hidden = false; msg.textContent = `"${st.shortcut}" is being used by another app, so it doesn't work right now.`; }
+  else if (!st.background && st.shortcut) { msg.hidden = false; msg.textContent = 'The shortcut only works while NVTabs is running.'; }
+  else msg.hidden = true;
+}
+
+async function openSettings() {
+  const st = await guard(() => nv.getSettings());
+  if (!st) return;
+  recording = false;
+  renderSettings(st);
+  $('#settings').hidden = false;
+}
+
+async function closeSettings() {
+  if (recording) await stopRecording();
+  $('#settings').hidden = true;
+}
+
+async function saveSettings(change) {
+  const st = await guard(() => nv.saveSettings(change));
+  renderSettings(st || await nv.getSettings());
+  return st;
+}
+
+async function stopRecording() {
+  recording = false;
+  await nv.pauseShortcut(false);
+  renderSettings(await nv.getSettings());
+}
+
+// Convierte una tecla presionada en un atajo de Electron, p. ej. "Ctrl+Alt+S"
+function accelFromEvent(e) {
+  if (['Control', 'Alt', 'Shift', 'Meta', 'AltGraph'].includes(e.key)) return null;
+  const mods = [];
+  if (e.ctrlKey) mods.push('Ctrl');
+  if (e.altKey) mods.push('Alt');
+  if (e.shiftKey) mods.push('Shift');
+  const c = e.code;
+  const named = { Space: 'Space', PrintScreen: 'PrintScreen', Insert: 'Insert', Delete: 'Delete', Home: 'Home', End: 'End',
+    PageUp: 'PageUp', PageDown: 'PageDown', ArrowUp: 'Up', ArrowDown: 'Down', ArrowLeft: 'Left', ArrowRight: 'Right' };
+  let key = null;
+  if (/^Key[A-Z]$/.test(c)) key = c.slice(3);
+  else if (/^Digit\d$/.test(c)) key = c.slice(5);
+  else if (/^F([1-9]|1\d|2[0-4])$/.test(c)) key = c;
+  else if (named[c]) key = named[c];
+  if (!key) return { error: 'That key cannot be used. Try a letter, a number or an F key.' };
+  if (!mods.length && !/^F\d+$|^PrintScreen$/.test(key)) return { error: 'Use Ctrl, Alt or Shift together with the key (for example Ctrl + Alt + S).' };
+  return { accel: [...mods, key].join('+') };
+}
+
+$('#setShortcut').addEventListener('click', async () => {
+  if (recording) { await stopRecording(); return; }
+  recording = true;
+  await nv.pauseShortcut(true);
+  renderSettings(await nv.getSettings());
+});
+$('#setShortcutClear').addEventListener('click', () => saveSettings({ shortcut: '' }));
+$('#setBackground').addEventListener('change', (e) => saveSettings({ background: e.target.checked }));
+$('#setStartup').addEventListener('change', (e) => saveSettings({ startup: e.target.checked }));
+$('#setClose').addEventListener('click', closeSettings);
+$('#settings').addEventListener('mousedown', (e) => { if (e.target === e.currentTarget) closeSettings(); });
+
+// Grabar el atajo nuevo (fase de captura: tiene prioridad sobre los demás atajos de la app)
+document.addEventListener('keydown', async (e) => {
+  if (!recording) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  if (e.key === 'Escape') { await stopRecording(); return; }
+  const r = accelFromEvent(e);
+  if (!r) return;
+  const msg = $('#setShortcutMsg');
+  if (r.error) { msg.hidden = false; msg.textContent = r.error; return; }
+  recording = false;
+  const st = await saveSettings({ shortcut: r.accel });
+  await nv.pauseShortcut(false);
+  if (st) toast(`Screenshot shortcut: ${prettyShortcut(st.shortcut)}`);
+}, true);
+
+// Capturas nuevas (llegan aunque la ventana esté escondida)
+nv.onItemsChanged(async (tab) => {
+  await refreshTabs();
+  if (tab === S.current) await loadPhotos();
+  else if (!S.current && S.tabs[0]) await selectTab(S.tabs[0].name);
+});
+nv.onGotoTab(async (tab) => {
+  closeViewer();
+  await refreshTabs();
+  await selectTab(tab);
 });
 
 // ------------------------------------------------------------------ Teclado
@@ -726,7 +852,9 @@ document.addEventListener('keydown', (e) => {
     else if (ctrl && e.key.toLowerCase() === 's') { e.preventDefault(); saveNote(); }
     return;
   }
+  if (settingsOpen()) { if (e.key === 'Escape') { closeSettings(); e.preventDefault(); } return; }
   if (aboutOpen()) { if (e.key === 'Escape') { closeAbout(); e.preventDefault(); } return; }
+  if (ctrl && e.key === ',') { openSettings(); e.preventDefault(); return; }
   if (e.key === 'F1') { openAbout(); e.preventDefault(); return; }
 
   if (S.viewer >= 0) {
@@ -734,6 +862,7 @@ document.addEventListener('keydown', (e) => {
     else if (e.key === 'ArrowRight' || e.key === ' ') vStep(1);
     else if (e.key === 'Escape') closeViewer();
     else if (e.key === 'Delete') viewerDelete();
+    else if (e.key.toLowerCase() === 'l' && !ctrl) searchLens(vCurrent());
     else if (e.key === 'Home') { S.viewer = 0; showViewerPhoto(); }
     else if (e.key === 'End') { S.viewer = S.vlist.length - 1; showViewerPhoto(); }
     else return;
