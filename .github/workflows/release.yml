@@ -1,0 +1,120 @@
+# Compila NVTabs en GitHub, la firma con SignPath (si está configurado) y crea una Release en borrador.
+#
+# Cómo publicar una versión:
+#   1. Subir "version" en package.json (por ejemplo 1.0.2).
+#   2. Crear y subir la etiqueta:  git tag v1.0.2  &&  git push origin v1.0.2
+#   3. Aprobar las firmas en SignPath (si está activo) y publicar la Release en GitHub.
+#
+# Firma con SignPath Foundation (se activa sola cuando existen estos datos en
+# GitHub > Settings > Secrets and variables > Actions):
+#   - Variable  SIGNPATH_ORGANIZATION_ID  (ID de la organización en SignPath)
+#   - Secreto   SIGNPATH_API_TOKEN        (token de un usuario con permiso "submitter")
+# Configuración esperada en SignPath: proyecto "nvtabs", política "release-signing" y las
+# configuraciones de artefacto "app-folder" e "installer" (ver .github/signpath/).
+
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write   # crear la Release
+  actions: read     # SignPath descarga los artefactos subidos
+
+env:
+  SIGNPATH_ENABLED: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Comprobar que la etiqueta coincide con package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          $v = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          if ("v$v" -ne "${{ github.ref_name }}") { throw "La etiqueta ${{ github.ref_name }} no coincide con la versión v$v de package.json" }
+
+      # Con firma: se aplica el ícono al .exe (la firma hace que Windows lo acepte).
+      # Sin firma: el .exe queda sin modificar para que Smart App Control lo reconozca.
+      - name: Empaquetar la app
+        run: npx electron-builder --win --dir --config.win.signAndEditExecutable=${{ env.SIGNPATH_ENABLED }}
+
+      # ---------------------------------------------------------------- Firma de NVTabs.exe
+      - name: Subir la app sin firmar
+        if: env.SIGNPATH_ENABLED == 'true'
+        id: upload-app
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-sin-firmar
+          path: dist/win-unpacked
+
+      - name: Firmar la app (SignPath)
+        if: env.SIGNPATH_ENABLED == 'true'
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: nvtabs
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: app-folder
+          github-artifact-id: ${{ steps.upload-app.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 3600   # la firma se aprueba a mano
+          output-artifact-directory: dist/app-firmada
+
+      - name: Elegir la carpeta de la app
+        shell: pwsh
+        run: |
+          $dir = if ('${{ env.SIGNPATH_ENABLED }}' -eq 'true') { 'dist/app-firmada' } else { 'dist/win-unpacked' }
+          "APP_DIR=$dir" >> $env:GITHUB_ENV
+
+      # ---------------------------------------------------------------- Instalador y portable
+      - name: Crear instalador y versión portable
+        run: npx electron-builder --win nsis zip --prepackaged ${{ env.APP_DIR }}
+
+      - name: Juntar archivos para publicar
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory release | Out-Null
+          Copy-Item dist/*.exe, dist/*.zip release/
+
+      - name: Subir el instalador sin firmar
+        if: env.SIGNPATH_ENABLED == 'true'
+        id: upload-installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: instalador-sin-firmar
+          path: release/*.exe
+
+      - name: Firmar el instalador (SignPath)
+        if: env.SIGNPATH_ENABLED == 'true'
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: nvtabs
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: installer
+          github-artifact-id: ${{ steps.upload-installer.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 3600
+          output-artifact-directory: release   # reemplaza el instalador por el firmado
+
+      - name: Crear la Release (borrador)
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          files: release/*

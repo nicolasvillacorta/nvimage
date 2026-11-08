@@ -1,0 +1,62 @@
+{
+  "name": "nvtabs",
+  "productName": "NVTabs",
+  "version": "1.3.0",
+  "description": "NVTabs - photos and notes organized in tabs",
+  "author": "Nicolas Villacorta",
+  "license": "MIT",
+  "homepage": "https://github.com/nicolasvillacorta/nvtabs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nicolasvillacorta/nvtabs.git"
+  },
+  "main": "src/main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win nsis",
+    "build:portable": "electron-builder --win zip",
+    "icons": "electron build/make-icons.js"
+  },
+  "build": {
+    "appId": "com.nvtabs.app",
+    "productName": "NVTabs",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "build/icon.png",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "extraResources": [
+      {
+        "from": "build/icon.ico",
+        "to": "icon.ico"
+      }
+    ],
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "NVTabs",
+      "include": "build/installer.nsh",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "artifactName": "NVTabs-Setup-${version}.exe"
+    },
+    "artifactName": "NVTabs-Portable-${version}.${ext}",
+    "afterPack": "build/afterPack.js"
+  },
+  "devDependencies": {
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.0"
+  }
+}

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; img-src 'self' nv: data:; style-src 'self'; script-src 'self'">
+  <title>NVTabs</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="titlebar">
+    <div class="brand">
+      <img src="icon.svg" class="logo" alt="">
+      <span>NVTabs</span>
+    </div>
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <button class="tab-add" id="addTab" title="New tab (Ctrl+T)" data-icon="plus"></button>
+    <div class="drag-space"></div>
+    <button class="tab-add" id="appMenu" title="Menu" data-icon="more"></button>
+  </header>
+
+  <div class="toolbar">
+    <div class="tb-left">
+      <h1 id="title"></h1>
+      <span id="count" class="muted"></span>
+    </div>
+    <div class="tb-actions">
+      <div id="selActions" class="sel-actions" hidden>
+        <span id="selCount"></span>
+        <button class="btn" id="clearSel">Cancel</button>
+        <button class="btn danger" id="delSel" data-icon="trash">Delete</button>
+        <span class="sep"></span>
+      </div>
+      <button class="btn" id="selectAll" data-icon="checks" title="Select all (Ctrl+A)">Select</button>
+      <button class="btn" id="openFolder" data-icon="folder" title="Open this tab's folder">Folder</button>
+      <button class="btn" id="newNote" data-icon="note" title="New note (Ctrl+N)">New note</button>
+      <button class="btn primary" id="addPhotos" data-icon="plus" title="Add photos or notes (Ctrl+O)">Add files</button>
+      <label class="size" title="Thumbnail size">
+        <span data-icon="small"></span>
+        <input type="range" id="size" min="120" max="380" step="10">
+        <span data-icon="big"></span>
+      </label>
+    </div>
+  </div>
+
+  <main id="main">
+    <div id="grid" class="grid"></div>
+    <div id="empty" class="empty" hidden>
+      <span data-icon="image" class="big-icon"></span>
+      <h2>This tab is empty</h2>
+      <p>Drag photos or text files here, paste them with <kbd>Ctrl</kbd>+<kbd>V</kbd>, or</p>
+      <div class="empty-actions">
+        <button class="btn" id="emptyNote" data-icon="note">New note</button>
+        <button class="btn primary" id="emptyAdd" data-icon="plus">Add files</button>
+      </div>
+    </div>
+    <div id="noTabs" class="empty" hidden>
+      <span data-icon="folder" class="big-icon"></span>
+      <h2>You don't have any tabs yet</h2>
+      <p>Create a tab to start saving photos and notes (for example "Sales").</p>
+      <button class="btn primary" id="noTabsAdd" data-icon="plus">Create tab</button>
+    </div>
+  </main>
+
+  <div id="drop" class="drop" hidden>
+    <div class="drop-box">
+      <span data-icon="plus" class="big-icon"></span>
+      <div>Drop to add to <b id="dropName"></b></div>
+      <small>You can also drop them on another tab</small>
+    </div>
+  </div>
+
+  <div id="editor" class="modal-back" hidden>
+    <div class="editor" role="dialog" aria-labelledby="edName">
+      <div class="ed-top">
+        <span data-icon="note" class="ed-icon"></span>
+        <div class="ed-title"><span id="edName"></span><span id="edState"></span></div>
+        <button class="vbtn-l" id="edOpenWith" data-icon="external" title="Open with another app"></button>
+        <button class="vbtn-l" id="edReveal" data-icon="folder" title="Show in folder"></button>
+        <button class="vbtn-l" id="edClose" data-icon="x" title="Close (Esc)"></button>
+      </div>
+      <textarea id="edText" spellcheck="false" placeholder="Start typing… The first line becomes the note's name."></textarea>
+    </div>
+  </div>
+
+  <div id="viewer" class="viewer" hidden>
+    <div class="v-top">
+      <div class="v-info"><span id="vName"></span><span id="vPos"></span></div>
+      <div class="v-actions">
+        <button class="vbtn" id="vOpen" data-icon="external" title="Open with the default Windows app"></button>
+        <button class="vbtn" id="vReveal" data-icon="folder" title="Show in folder"></button>
+        <button class="vbtn" id="vCopy" data-icon="copy" title="Copy image"></button>
+        <button class="vbtn danger" id="vDelete" data-icon="trash" title="Delete (Del)"></button>
+        <button class="vbtn" id="vClose" data-icon="x" title="Close (Esc)"></button>
+      </div>
+    </div>
+    <div class="v-stage" id="vStage">
+      <button class="v-nav prev" id="vPrev" data-icon="left" title="Previous (←)"></button>
+      <img id="vImg" alt="">
+      <button class="v-nav next" id="vNext" data-icon="right" title="Next (→)"></button>
+    </div>
+  </div>
+
+  <div id="about" class="modal-back" hidden>
+    <div class="about" role="dialog" aria-labelledby="aboutTitle">
+      <button class="about-close" id="aboutClose" data-icon="x" title="Close (Esc)"></button>
+      <img src="icon.svg" class="about-logo" alt="">
+      <h2 id="aboutTitle">NVTabs</h2>
+      <div class="about-version" id="aboutVersion"></div>
+      <p class="about-desc">Your photos and notes, organized in tabs.<br>Free, open source and fully offline.</p>
+      <div class="about-links">
+        <button class="btn" data-link="repo" data-icon="github">Source code</button>
+        <button class="btn" data-link="issues" data-icon="bug">Report an issue</button>
+        <button class="btn" data-link="releases" data-icon="download">What's new</button>
+      </div>
+      <dl class="about-info" id="aboutInfo"></dl>
+      <div class="about-foot">
+        <span>© 2026 Nicolas Villacorta · <a href="#" data-link="license">MIT License</a></span>
+        <button class="btn" id="aboutCopy" data-icon="copy">Copy info</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>

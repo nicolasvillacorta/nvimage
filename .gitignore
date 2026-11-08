@@ -1,0 +1,4 @@
+node_modules/
+dist/
+version-powershell/Fotos/
+version-powershell/config.json
